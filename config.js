@@ -1,0 +1,5 @@
+const SB_URL='https://giewdbcoghhphyjmlwrh.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpZXdkYmNvZ2hocGh5am1sd3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg2MjEsImV4cCI6MjEwODg1NDYyMX0.-CRgYQLWjLEMLHiGLmbJAPLK8DwiX4s1T10xDhOBhKE';
+
+
+
+

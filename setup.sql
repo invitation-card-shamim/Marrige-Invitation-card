@@ -1,0 +1,10 @@
+create table cards(slug text primary key,data jsonb not null default '{}',live int[] default '{1}',first_lang text default 'bn',notice text default '',contacts jsonb default '{}');
+create table views(id bigserial primary key,slug text,theme int,at timestamptz default now());
+alter table cards enable row level security;alter table views enable row level security;
+create policy r on cards for select using(true);
+create policy w on cards for all to authenticated using(true) with check(true);
+create policy vi on views for insert with check(true);
+create policy vs on views for select to authenticated using(true);
+insert into storage.buckets(id,name,public) values('media','media',true) on conflict do nothing;
+create policy mr on storage.objects for select using(bucket_id='media');
+create policy mw on storage.objects for insert to authenticated with check(bucket_id='media');

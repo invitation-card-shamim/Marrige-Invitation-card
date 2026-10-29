@@ -1,0 +1,46 @@
+<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin</title>
+<style>body{font:15px sans-serif;max-width:760px;margin:auto;padding:12px;background:#f4f4f8}input,textarea,select,button{padding:8px;margin:3px 0;width:100%;border:1px solid #bbb;border-radius:8px;font:inherit}button{background:#5b21b6;color:#fff;border:0;cursor:pointer}.r{display:grid;grid-template-columns:1fr 1fr;gap:6px}.c{background:#fff;padding:12px;border-radius:12px;margin:10px 0}label{font-size:13px;color:#555;display:block;margin-top:6px}input[type=checkbox]{width:auto}.ck{display:inline-block;margin-right:10px}#ls button{width:auto;margin-right:6px}</style></head><body>
+<div id="lg" class="c" hidden><h3>অ্যাডমিন লগইন</h3><input id="em" placeholder="Email"><input id="pw" type="password" placeholder="Password"><button onclick="login()">লগইন</button></div>
+<div id="ad" hidden><div class="c"><h3>আপনার কার্ডসমূহ</h3><div id="ls"></div><input id="sl" placeholder="নতুন লিংকের নাম (ইংরেজিতে, যেমন naina)"><button onclick="load($('#sl').value)">খুলুন / নতুন বানান</button></div>
+<div id="fm" class="c" hidden><h3 id="ti"></h3><div id="fs"></div>
+<label>অনুষ্ঠানের তারিখ ও সময় (কাউন্টডাউনের জন্য)</label><input id="iso" type="datetime-local"><label>ভেন্যুর গুগল ম্যাপ লিংক</label><input id="map">
+<label>বর-কনের ছবি</label><input id="ph" type="file" accept="image/*"><label>গ্যালারির ছবি (একসাথে অনেক)</label><input id="gl" type="file" accept="image/*" multiple><button onclick="dat.gal=[];save()" style="background:#b91c1c">গ্যালারি মুছুন</button>
+<label>গান (mp3)</label><input id="au" type="file" accept="audio/*">
+<label>কার্ড প্রথমে কোন ভাষায় খুলবে</label><select id="fl"><option value="bn">বাংলা</option><option value="en">English</option></select>
+<label>লাইভ থিম (যেগুলো টিক, সেগুলোর লিংক চলবে)</label><div id="th"></div>
+<label>নোটিস (সবাইকে ওপরে দেখাবে, ফাঁকা রাখলে দেখাবে না)</label><input id="nt">
+<label>WhatsApp নম্বর (দেশের কোডসহ, যেমন 8801XXXXXXXXX)</label><input id="wa"><label class="ck"><input type="checkbox" id="wa_s"> দেখাও</label>
+<label>Facebook লিংক</label><input id="fb"><label class="ck"><input type="checkbox" id="fb_s"> দেখাও</label>
+<label>YouTube লিংক</label><input id="yt"><label class="ck"><input type="checkbox" id="yt_s"> দেখাও</label>
+<button onclick="save()">💾 সেভ করুন</button><p id="ms"></p><div id="st"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="/config.js"></script>
+<script>
+const $=s=>document.querySelector(s),db=supabase.createClient(SB_URL,SB_KEY);
+const F=[['gn','বরের নাম'],['gf','বরের পিতা'],['gm','বরের মাতা'],['ga','বরের ঠিকানা'],['bn','কনের নাম'],['bf','কনের পিতা'],['bm','কনের মাতা'],['ba','কনের ঠিকানা'],['ev','অনুষ্ঠানের নাম'],['dt','তারিখ'],['bd','বাংলা তারিখ'],['dy','বার ও সময়'],['vn','ভেন্যু'],['msg','আমন্ত্রণ বার্তা'],['wel','অভ্যর্থনায়'],['ph','প্রয়োজনে (ফোন)'],['wi','শুভেচ্ছান্তে']];
+let cur,dat;
+async function login(){const{error}=await db.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});error?alert(error.message):start()}
+async function start(){const{data:{session}}=await db.auth.getSession();$('#lg').hidden=!!session;$('#ad').hidden=!session;if(!session)return;
+ $('#fs').innerHTML=F.map(([k,l])=>`<label>${l}</label><div class="r"><input data-l="bn" data-k="${k}" placeholder="বাংলা"><input data-l="en" data-k="${k}" placeholder="English"></div>`).join('');
+ $('#th').innerHTML=Array.from({length:10},(_,i)=>`<label class="ck"><input type="checkbox" id="t${i+1}"> থিম ${i+1}</label>`).join('');
+ const{data}=await db.from('cards').select('slug');$('#ls').innerHTML=(data||[]).map(r=>`<button onclick="load('${r.slug}')">${r.slug}</button>`).join('')}
+async function load(s){cur=s.toLowerCase().replace(/[^a-z0-9-]/g,'');if(!cur)return;
+ const{data}=await db.from('cards').select('*').eq('slug',cur).maybeSingle();dat=data?data.data:{};dat.bn=dat.bn||{};dat.en=dat.en||{};
+ const c=data?.contacts||{},live=data?.live||[1];$('#fm').hidden=false;$('#ti').textContent='কার্ড: '+cur;
+ document.querySelectorAll('[data-k]').forEach(e=>e.value=dat[e.dataset.l][e.dataset.k]||'');
+ $('#iso').value=dat.iso||'';$('#map').value=dat.map||'';$('#fl').value=data?.first_lang||'bn';$('#nt').value=data?.notice||'';
+ for(let i=1;i<=10;i++)$('#t'+i).checked=live.includes(i);
+ ['wa','fb','yt'].forEach(k=>{$('#'+k).value=c[k]||'';$('#'+k+'_s').checked=!!c[k+'_s']});stats()}
+const shrink=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const k=Math.min(1,1200/i.width),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);c.toBlob(b=>r(new File([b],'p.jpg',{type:'image/jpeg'})),'image/jpeg',.8)};i.src=URL.createObjectURL(f)});
+async function up(f,img){if(img)f=await shrink(f);const p=Date.now()+Math.random().toString(36).slice(2,6)+'-'+f.name.replace(/[^\w.]/g,'');const{error}=await db.storage.from('media').upload(p,f);if(error)throw error;return db.storage.from('media').getPublicUrl(p).data.publicUrl}
+async function save(){try{$('#ms').textContent='সেভ হচ্ছে...';
+ document.querySelectorAll('[data-k]').forEach(e=>dat[e.dataset.l][e.dataset.k]=e.value);dat.iso=$('#iso').value;dat.map=$('#map').value;
+ if($('#ph').files[0])dat.photo=await up($('#ph').files[0],1);if($('#au').files[0])dat.audio=await up($('#au').files[0]);
+ if($('#gl').files.length)dat.gal=[...(dat.gal||[]),...await Promise.all([...$('#gl').files].map(f=>up(f,1)))];
+ const live=[1,2,3,4,5,6,7,8,9,10].filter(i=>$('#t'+i).checked),contacts={};['wa','fb','yt'].forEach(k=>{contacts[k]=$('#'+k).value;contacts[k+'_s']=$('#'+k+'_s').checked});
+ const{error}=await db.from('cards').upsert({slug:cur,data:dat,live:live.length?live:[1],first_lang:$('#fl').value,notice:$('#nt').value,contacts});if(error)throw error;
+ $('#ms').textContent='✅ সেভ হয়েছে';$('#ph').value=$('#au').value=$('#gl').value='';stats()}catch(e){$('#ms').textContent='❌ '+e.message}}
+async function stats(){const live=[1,2,3,4,5,6,7,8,9,10].filter(i=>$('#t'+i).checked),n=async t=>(await db.from('views').select('*',{count:'exact',head:true}).eq('slug',cur).match(t?{theme:t}:{})).count;
+ const tot=await n(0),rows=await Promise.all(live.map(async t=>`<p>থিম ${t}: <a href="/${cur}/${t}" target="_blank">${location.origin}/${cur}/${t}</a> — 👁 ${await n(t)}</p>`));
+ $('#st').innerHTML=`<h3>👁 মোট ভিউ: ${tot}</h3><p>সাধারণ লিংক: <a href="/${cur}" target="_blank">${location.origin}/${cur}</a></p>`+rows.join('')}
+start();
+</script></body></html>
