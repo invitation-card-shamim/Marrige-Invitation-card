@@ -3,7 +3,7 @@
 <style>
 :root{--b1:#1a0b2e;--b2:#3d1560;--a:#ffd166;--t:#fff}
 *{box-sizing:border-box;margin:0}
-body{font:17px/1.7 'Hind Siliguri',sans-serif;color:var(--t);background:linear-gradient(160deg,var(--b1),var(--b2)) fixed;min-height:100vh;text-align:center;overflow-x:hidden;padding-bottom:90px}
+body{font:17px/1.7 'Hind Siliguri',sans-serif;color:var(--t);background:linear-gradient(160deg,var(--b1),var(--b2)) fixed;min-height:100vh;text-align:center;overflow-x:hidden;padding-bottom:200px}
 h2,.big{font-family:'Noto Serif Bengali',serif;color:var(--a);font-size:1.6rem}
 .st{display:none;max-width:560px;margin:14px auto;padding:20px 16px;border:2px solid var(--a);border-radius:20px;background:#0003;transition:.6s}
 .st.v{display:block;animation:up 1s both}@keyframes up{from{opacity:0;transform:translateY(60px)}}
@@ -27,7 +27,7 @@ h2,.big{font-family:'Noto Serif Bengali',serif;color:var(--a);font-size:1.6rem}
 #cv{position:fixed;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;background:linear-gradient(160deg,var(--b1),var(--b2));transition:1s}
 #cv input{padding:10px;border-radius:12px;border:0;font:inherit;width:240px;text-align:center}
 #lb,#mt{position:fixed;top:8px;z-index:5;padding:6px 14px;border:0;border-radius:20px;background:var(--a);color:#000}#lb{right:8px}#mt{left:8px}
-#nx{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:5;box-shadow:0 0 20px var(--a)}#sk{position:fixed;bottom:4px;right:10px;z-index:5;background:none;border:0;color:var(--t);opacity:.6;font-size:12px}
+#nx{position:fixed;bottom:calc(92px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:5;padding:13px 34px;font-size:18px;color:var(--b1);box-shadow:0 0 20px var(--a);white-space:nowrap}#sk{position:fixed;bottom:calc(58px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:5;padding:8px 16px;background:none;border:0;color:var(--t);opacity:.7;font-size:13px;white-space:nowrap}
 .full ~ #nx,.full ~ #sk{display:none}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style></head><body><div id="app"></div><button id="nx" class="bt"></button><button id="sk"></button><div id="cv"></div>
