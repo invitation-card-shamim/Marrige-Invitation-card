@@ -7,7 +7,7 @@
 <label>বর-কনের ছবি</label><input id="ph" type="file" accept="image/*"><label>গ্যালারির ছবি (একসাথে অনেক)</label><input id="gl" type="file" accept="image/*" multiple><button onclick="dat.gal=[];save()" style="background:#b91c1c">গ্যালারি মুছুন</button>
 <label>গান (mp3)</label><input id="au" type="file" accept="audio/*">
 <label>কার্ড প্রথমে কোন ভাষায় খুলবে</label><select id="fl"><option value="bn">বাংলা</option><option value="en">English</option></select>
-<label>লাইভ থিম (যেগুলো টিক, সেগুলোর লিংক চলবে)</label><div id="th"></div>
+<label>দৃশ্য (প্রতিটি ধাপে যা দেখাবে)</label><select id="sn"></select><button onclick="pv()" style="background:#0f766e">🎲 প্রিভিউ দেখুন (অটো হলে র‍্যান্ডম)</button><label>লাইভ থিম (যেগুলো টিক, সেগুলোর লিংক চলবে)</label><div id="th"></div>
 <label>নোটিস (সবাইকে ওপরে দেখাবে, ফাঁকা রাখলে দেখাবে না)</label><input id="nt">
 <label>WhatsApp নম্বর (দেশের কোডসহ, যেমন 8801XXXXXXXXX)</label><input id="wa"><label class="ck"><input type="checkbox" id="wa_s"> দেখাও</label>
 <label>Facebook লিংক</label><input id="fb"><label class="ck"><input type="checkbox" id="fb_s"> দেখাও</label>
@@ -17,9 +17,10 @@
 <script>
 const $=s=>document.querySelector(s),db=supabase.createClient(SB_URL,SB_KEY);
 const F=[['gn','বরের নাম'],['gf','বরের পিতা'],['gm','বরের মাতা'],['ga','বরের ঠিকানা'],['bn','কনের নাম'],['bf','কনের পিতা'],['bm','কনের মাতা'],['ba','কনের ঠিকানা'],['ev','অনুষ্ঠানের নাম'],['dt','তারিখ'],['bd','বাংলা তারিখ'],['dy','বার ও সময়'],['vn','ভেন্যু'],['msg','আমন্ত্রণ বার্তা'],['wel','অভ্যর্থনায়'],['ph','প্রয়োজনে (ফোন)'],['wi','শুভেচ্ছান্তে']];
-let cur,dat;
+let cur,dat;const SN=['ময়ূর','কবুতর','পাখি','প্রজাপতি','জোনাকি','সূর্যোদয়','নদী ও নৌকা','তারাভরা রাত','ঝরা পাতা','গোলাপ','শাপলা','ফুলের বাগান','মসজিদ','আলপনা','আতশবাজি','লণ্ঠন','বেলুন','হৃদয়'];
+function pv(){const v=$('#sn').value;open('/'+cur+'?s='+(v=='auto'?1+Math.floor(Math.random()*18):v))}
 async function login(){const{error}=await db.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});error?alert(error.message):start()}
-async function start(){const{data:{session}}=await db.auth.getSession();$('#lg').hidden=!!session;$('#ad').hidden=!session;if(!session)return;
+async function start(){$('#sn').innerHTML='<option value="auto">🎲 অটো (প্রতিবার নতুন র‍্যান্ডম)</option>'+SN.map((n,i)=>`<option value="${i+1}">${n}</option>`).join('');const{data:{session}}=await db.auth.getSession();$('#lg').hidden=!!session;$('#ad').hidden=!session;if(!session)return;
  $('#fs').innerHTML=F.map(([k,l])=>`<label>${l}</label><div class="r"><input data-l="bn" data-k="${k}" placeholder="বাংলা"><input data-l="en" data-k="${k}" placeholder="English"></div>`).join('');
  $('#th').innerHTML=Array.from({length:10},(_,i)=>`<label class="ck"><input type="checkbox" id="t${i+1}"> থিম ${i+1}</label>`).join('');
  const{data}=await db.from('cards').select('slug');$('#ls').innerHTML=(data||[]).map(r=>`<button onclick="load('${r.slug}')">${r.slug}</button>`).join('')}
@@ -27,13 +28,13 @@ async function load(s){cur=s.toLowerCase().replace(/[^a-z0-9-]/g,'');if(!cur)ret
  const{data}=await db.from('cards').select('*').eq('slug',cur).maybeSingle();dat=data?data.data:{};dat.bn=dat.bn||{};dat.en=dat.en||{};
  const c=data?.contacts||{},live=data?.live||[1];$('#fm').hidden=false;$('#ti').textContent='কার্ড: '+cur;
  document.querySelectorAll('[data-k]').forEach(e=>e.value=dat[e.dataset.l][e.dataset.k]||'');
- $('#iso').value=dat.iso||'';$('#map').value=dat.map||'';$('#fl').value=data?.first_lang||'bn';$('#nt').value=data?.notice||'';
+ $('#sn').value=dat.scene||'auto';$('#iso').value=dat.iso||'';$('#map').value=dat.map||'';$('#fl').value=data?.first_lang||'bn';$('#nt').value=data?.notice||'';
  for(let i=1;i<=10;i++)$('#t'+i).checked=live.includes(i);
  ['wa','fb','yt'].forEach(k=>{$('#'+k).value=c[k]||'';$('#'+k+'_s').checked=!!c[k+'_s']});stats()}
 const shrink=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const k=Math.min(1,1200/i.width),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);c.toBlob(b=>r(new File([b],'p.jpg',{type:'image/jpeg'})),'image/jpeg',.8)};i.src=URL.createObjectURL(f)});
 async function up(f,img){if(img)f=await shrink(f);const p=Date.now()+Math.random().toString(36).slice(2,6)+'-'+f.name.replace(/[^\w.]/g,'');const{error}=await db.storage.from('media').upload(p,f);if(error)throw error;return db.storage.from('media').getPublicUrl(p).data.publicUrl}
 async function save(){try{$('#ms').textContent='সেভ হচ্ছে...';
- document.querySelectorAll('[data-k]').forEach(e=>dat[e.dataset.l][e.dataset.k]=e.value);dat.iso=$('#iso').value;dat.map=$('#map').value;
+ document.querySelectorAll('[data-k]').forEach(e=>dat[e.dataset.l][e.dataset.k]=e.value);dat.scene=$('#sn').value;dat.iso=$('#iso').value;dat.map=$('#map').value;
  if($('#ph').files[0])dat.photo=await up($('#ph').files[0],1);if($('#au').files[0])dat.audio=await up($('#au').files[0]);
  if($('#gl').files.length)dat.gal=[...(dat.gal||[]),...await Promise.all([...$('#gl').files].map(f=>up(f,1)))];
  const live=[1,2,3,4,5,6,7,8,9,10].filter(i=>$('#t'+i).checked),contacts={};['wa','fb','yt'].forEach(k=>{contacts[k]=$('#'+k).value;contacts[k+'_s']=$('#'+k+'_s').checked});
